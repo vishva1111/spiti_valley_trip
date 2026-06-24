@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏔️ Spiti Valley Trip Planner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; display: flex; height: 100vh; overflow: hidden; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 245px; min-width: 245px; background: #1e3a5f;
+      display: flex; flex-direction: column; height: 100vh; overflow-y: auto;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+    }
+    .sidebar-header {
+      padding: 20px 16px 16px;
+      background: linear-gradient(160deg, #0f2942 0%, #1e3a5f 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .sidebar-logo { font-size: 24px; margin-bottom: 6px; }
+    .sidebar-title { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+    .sidebar-sub { font-size: 10.5px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+
+    .sidebar-section { padding: 14px 14px 5px; font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px; margin: 1px 8px;
+      border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 12.5px; color: rgba(255,255,255,0.6);
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.12); font-weight: 600; }
+    .nav-item .nav-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+    .nav-item .nav-label { flex: 1; }
+    .nav-item .nav-badge { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+    .nav-item.active .nav-badge { background: rgba(99,179,237,0.25); color: #90cdf4; }
+
+    .sidebar-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 8px 14px; }
+
+    .sidebar-stats { padding: 12px; margin: 8px; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); }
+    .ss-title { font-size: 9.5px; color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 9px; }
+    .ss-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .ss-key { font-size: 11px; color: rgba(255,255,255,0.45); }
+    .ss-val { font-size: 11px; color: #fff; font-weight: 600; }
+
+    /* MAIN CONTENT */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .topbar {
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      padding: 13px 24px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .topbar-title { font-size: 15px; font-weight: 700; flex: 1; color: #1a202c; }
+    .topbar-sub { font-size: 11px; color: #718096; }
+    .badge-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .bp-blue { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+    .bp-green { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+    .bp-orange { background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; }
+
+    .content { flex: 1; overflow-y: auto; padding: 20px 24px; background: #f0f4f8; }
+
+    /* CARDS */
+    .day-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 16px; display: none; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+    .day-card.active { display: block; }
+
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: linear-gradient(135deg, #f7fafc, #edf2f7); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .card-header-left { flex: 1; }
+    .ch-title { font-size: 15px; font-weight: 700; color: #1a202c; margin-bottom: 3px; }
+    .ch-sub { font-size: 11px; color: #718096; }
+    .ch-km { display: inline-flex; align-items: center; margin-top: 7px; background: #ebf8ff; color: #2b6cb0; font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid #bee3f8; }
+
+    /* STATS ROW */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .stat-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .stat-val { font-size: 22px; font-weight: 700; color: #1e3a5f; margin-bottom: 3px; }
+    .stat-lbl { font-size: 10px; color: #718096; font-weight: 500; }
+
+    /* ROUTE BAR */
+    .route-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+    .route-title { font-size: 10px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+    .route-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+    .rb { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 10px; font-size: 10.5px; color: #4a5568; white-space: nowrap; }
+    .rb.active-rb { background: #1e3a5f; color: #fff; border-color: #1e3a5f; font-weight: 600; }
+    .rarr { color: #cbd5e0; font-size: 12px; }
+
+    /* LEGEND */
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+    .li { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #718096; }
+    .ld { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* STOPS */
+    .stops-container { padding: 4px 0; }
+    .stop { display: flex; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #f7fafc; transition: background 0.1s; }
+    .stop:last-child { border-bottom: none; }
+    .stop:hover { background: #f7fafc; }
+    .stime { font-size: 10px; color: #a0aec0; min-width: 52px; padding-top: 4px; line-height: 1.3; font-weight: 600; }
+    .sdot { display: flex; flex-direction: column; align-items: center; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.12); }
+    .dl { width: 2px; background: #e2e8f0; flex: 1; margin: 3px 0; min-height: 18px; }
+    .si { flex: 1; }
+    .sn { font-size: 13px; font-weight: 600; color: #1a202c; margin-bottom: 3px; }
+    .sd { font-size: 11.5px; color: #718096; line-height: 1.65; }
+    .tag { display: inline-block; font-size: 9.5px; padding: 2px 9px; border-radius: 20px; margin-top: 5px; margin-right: 4px; font-weight: 600; }
+    .tm { background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; }
+    .tg { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+    .ts { background: #ebf8ff; color: #2b6cb0; border: 1px solid #90cdf4; }
+    .tf { background: #fff5f7; color: #97266d; border: 1px solid #fed7e2; }
+    .tw { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+
+    /* STAY BOX */
+    .stay-box { margin: 0 20px 16px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 11px 15px; font-size: 11.5px; display: flex; gap: 8px; align-items: flex-start; }
+    .stay-box strong { color: #1a202c; font-weight: 600; white-space: nowrap; }
+    .stay-box span { color: #718096; line-height: 1.55; }
+
+    /* TIPS */
+    .tips-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+    .tips-header { padding: 13px 20px; border-bottom: 1px solid #e2e8f0; background: #f7fafc; font-size: 13px; font-weight: 700; color: #1a202c; }
+    .tip { display: flex; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #f7fafc; font-size: 11.5px; color: #718096; line-height: 1.65; }
+    .tip:last-child { border-bottom: none; }
+    .tip:hover { background: #f7fafc; }
+    .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .tip strong { color: #1a202c; }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f0f4f8; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+
+    /* DASHBOARD OVERVIEW */
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .ov-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .ov-title { font-size: 10.5px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 11px; }
+    .ov-item { display: flex; align-items: center; gap: 9px; padding: 6px 0; border-bottom: 1px solid #f7fafc; font-size: 11.5px; }
+    .ov-item:last-child { border-bottom: none; }
+    .ov-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .ov-name { flex: 1; color: #2d3748; }
+    .ov-meta { color: #a0aec0; font-size: 10.5px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">🏔️</div>
+    <div class="sidebar-title">Spiti Valley 2025</div>
+    <div class="sidebar-sub">Aug 5–14 &nbsp;·&nbsp; 5 Boys 1 Car</div>
+  </div>
+
+  <div class="sidebar-section">Overview</div>
+  <div class="nav-item active" onclick="showPage('overview', this)">
+    <span class="nav-icon">📊</span>
+    <span class="nav-label">Dashboard</span>
+  </div>
+  <div class="nav-item" onclick="showPage('tips', this)">
+    <span class="nav-icon">⚡</span>
+    <span class="nav-label">Critical Checklist</span>
+    <span class="nav-badge">8</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-section">Day-by-Day Plan</div>
+
+  <div class="nav-item" onclick="showDay(0, this)">
+    <span class="nav-icon">1️⃣</span>
+    <span class="nav-label">Day 1 — Narkanda</span>
+    <span class="nav-badge">730km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(1, this)">
+    <span class="nav-icon">2️⃣</span>
+    <span class="nav-label">Day 2 — Chitkul</span>
+    <span class="nav-badge">180km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(2, this)">
+    <span class="nav-icon">3️⃣</span>
+    <span class="nav-label">Day 3 — Kalpa</span>
+    <span class="nav-badge">55km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(3, this)">
+    <span class="nav-icon">4️⃣</span>
+    <span class="nav-label">Day 4 — Tabo</span>
+    <span class="nav-badge">170km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(4, this)">
+    <span class="nav-icon">5️⃣</span>
+    <span class="nav-label">Day 5 — Kaza</span>
+    <span class="nav-badge">100km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(5, this)">
+    <span class="nav-icon">6️⃣</span>
+    <span class="nav-label">Day 6 — Key + Kibber</span>
+    <span class="nav-badge">60km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(6, this)">
+    <span class="nav-icon">7️⃣</span>
+    <span class="nav-label">Day 7 — Langza+Komic</span>
+    <span class="nav-badge">70km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(7, this)">
+    <span class="nav-icon">8️⃣</span>
+    <span class="nav-label">Day 8 — Chandratal</span>
+    <span class="nav-badge">95km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(8, this)">
+    <span class="nav-icon">9️⃣</span>
+    <span class="nav-label">Day 9 — Manali</span>
+    <span class="nav-badge">115km</span>
+  </div>
+  <div class="nav-item" onclick="showDay(9, this)">
+    <span class="nav-icon">🔟</span>
+    <span class="nav-label">Day 10 — Home</span>
+    <span class="nav-badge">1055km</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-stats">
+    <div class="ss-title">Trip Stats</div>
+    <div class="ss-row"><span class="ss-key">Total KM</span><span class="ss-val">~3000 km</span></div>
+    <div class="ss-row"><span class="ss-key">Places</span><span class="ss-val">18+ spots</span></div>
+    <div class="ss-row"><span class="ss-key">Max Altitude</span><span class="ss-val">4590m</span></div>
+    <div class="ss-row"><span class="ss-key">Travellers</span><span class="ss-val">5 Boys</span></div>
+    <div class="ss-row"><span class="ss-key">Budget/person</span><span class="ss-val">₹15–20K</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard — Spiti Valley Trip Overview</div>
+      <div class="topbar-sub" id="topbar-sub">Aug 5–14, 2025 &nbsp;·&nbsp; Ahmedabad → Shimla Route → Spiti → Manali → Ahmedabad</div>
+    </div>
+    <span class="badge-pill bp-blue">10 Days</span>
+    <span class="badge-pill bp-green">~3000 KM</span>
+    <span class="badge-pill bp-orange">18+ Places</span>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW PAGE -->
+    <div id="page-overview" class="day-card active" style="display:block;">
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val">10</div><div class="stat-lbl">Total Days</div></div>
+        <div class="stat-box"><div class="stat-val">Aug 5</div><div class="stat-lbl">Departure</div></div>
+        <div class="stat-box"><div class="stat-val">~3000</div><div class="stat-lbl">KM Round Trip</div></div>
+        <div class="stat-box"><div class="stat-val">18+</div><div class="stat-lbl">Places Covered</div></div>
+      </div>
+
+      <div class="route-section">
+        <div class="route-title">Full Route</div>
+        <div class="route-bar">
+          <div class="rb active-rb">Ahmedabad</div><div class="rarr">→</div>
+          <div class="rb">Narkanda</div><div class="rarr">→</div>
+          <div class="rb">Chitkul</div><div class="rarr">→</div>
+          <div class="rb">Kalpa</div><div class="rarr">→</div>
+          <div class="rb">Nako+Tabo</div><div class="rarr">→</div>
+          <div class="rb">Dhankar+Pin</div><div class="rarr">→</div>
+          <div class="rb">Kaza Circuit</div><div class="rarr">→</div>
+          <div class="rb">Langza+Komic</div><div class="rarr">→</div>
+          <div class="rb">Chandratal</div><div class="rarr">→</div>
+          <div class="rb">Manali→Home</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="li"><div class="ld" style="background:#f0883e"></div>Must Visit</div>
+        <div class="li"><div class="ld" style="background:#56d364"></div>Hidden Gem</div>
+        <div class="li"><div class="ld" style="background:#79c0ff"></div>Night Stay</div>
+        <div class="li"><div class="ld" style="background:#f778ba"></div>Food Stop</div>
+        <div class="li"><div class="ld" style="background:#ff7b72"></div>Warning/Alert</div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="ov-card">
+          <div class="ov-title">🏆 Must-Visit Highlights</div>
+          <div class="ov-item"><div class="ov-dot" style="background:#f0883e"></div><span class="ov-name">Chitkul — India's Last Village</span><span class="ov-meta">Day 2</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#f0883e"></div><span class="ov-name">Tabo Monastery (996 AD)</span><span class="ov-meta">Day 4</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#f0883e"></div><span class="ov-name">Key Monastery — Spiti's Icon</span><span class="ov-meta">Day 6</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#f0883e"></div><span class="ov-name">Chicham Bridge — Asia's Highest</span><span class="ov-meta">Day 6</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#f0883e"></div><span class="ov-name">Chandratal Lake — Trip Pinnacle</span><span class="ov-meta">Day 8</span></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-title">💎 Hidden Gems</div>
+          <div class="ov-item"><div class="ov-dot" style="background:#56d364"></div><span class="ov-name">Gue Village — 500yr Old Mummy</span><span class="ov-meta">Day 4</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#56d364"></div><span class="ov-name">Dhankar Lake Trek</span><span class="ov-meta">Day 5</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#56d364"></div><span class="ov-name">Hikkim — World's Highest Post Office</span><span class="ov-meta">Day 7</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#56d364"></div><span class="ov-name">Komic — World's Highest Village</span><span class="ov-meta">Day 7</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#56d364"></div><span class="ov-name">Langza Buddha + Fossils</span><span class="ov-meta">Day 7</span></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-title">⚠️ Critical Reminders</div>
+          <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Cash ₹10K+ — Reckong Peo ATM last</span><span class="ov-meta">Day 3</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Petrol full at Kaza — jerry can carry</span><span class="ov-meta">Day 5</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">BSNL SIM must — no Jio/Airtel in Spiti</span><span class="ov-meta">Before</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Diamox — start 1 day before altitude</span><span class="ov-meta">Day 3</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Chandratal road = very rough, go slow</span><span class="ov-meta">Day 8</span></div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-title">🏨 Advance Booking Required</div>
+          <div class="ov-item"><div class="ov-dot" style="background:#79c0ff"></div><span class="ov-name">Chitkul Homestays</span><span class="ov-meta">Aug = full</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#79c0ff"></div><span class="ov-name">Chandratal Camps</span><span class="ov-meta">1 month early</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#79c0ff"></div><span class="ov-name">Kalpa — limited rooms</span><span class="ov-meta">Book now</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#79c0ff"></div><span class="ov-name">Kaza Hotels</span><span class="ov-meta">Book now</span></div>
+          <div class="ov-item"><div class="ov-dot" style="background:#79c0ff"></div><span class="ov-name">Tabo Monastery Guest House</span><span class="ov-meta">Book now</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY 1 -->
+    <div id="page-day0" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 1 — Ahmedabad → Chandigarh → Narkanda</div>
+          <div class="ch-sub">Aug 5 (Tuesday) &nbsp;·&nbsp; 4:00 AM Departure</div>
+          <span class="ch-km">~730 km &nbsp;·&nbsp; 13-14 hrs drive</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">4:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Ahmedabad — Departure 🚗</div><div class="sd">વહેલી સવારે 4 વાગ્યે નીકળો. Tank full, tyre pressure check, snacks + water pack. Driver rotation plan ready rakho.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">7:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f778ba"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Palanpur / Udaipur Bypass — Breakfast</div><div class="sd">NH48 ઉપર dhaba breakfast. Petrol top-up.</div><span class="tag tf">Food Stop</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">1:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f778ba"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Chandigarh — Lunch + Supplies</div><div class="sd">ઢાબા lunch. Last big city — medicines (Diamox, Dolo, ORS), dry fruits, chocolates, extra layers buy karo. ATM. Petrol full.</div><span class="tag tf">Food + Supplies</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">4:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Shimla Bypass → Narkanda Road</div><div class="sd">Shimla city avoid karo — use bypass. Mountain driving starts here. Drive carefully, no overtaking on curves.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">7:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
+          <div class="si"><div class="sn">🏨 Narkanda — Night Stay</div><div class="sd">Apple orchard region at 2708m. Fresh air, scenic. Early sleep — tomorrow big mountain drive starts.</div><span class="tag ts">Night Stay</span></div>
+        
+</div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Hotel Hatu (HPTDC) or Ashiana Hotel Narkanda. ₹800–1200/room</span></div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div id="page-day1" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 2 — Narkanda → Sangla → Chitkul</div>
+          <div class="ch-sub">Aug 6 (Wednesday)</div>
+          <span class="ch-km">~180 km &nbsp;·&nbsp; 6-7 hrs mountain roads</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">7:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Narkanda → Rampur (Breakfast)</div><div class="sd">Sutlej River ની સાથે beautiful drive. Rampur town માં breakfast + petrol. Last petrol before Sangla valley.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">10:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Sangla Valley Entry 🌿</div><div class="sd">Baspa River ની સાથે lush green valley. August = full bloom greenery. ફોટા ઘણા લો — landscape changes after Spiti entry.</div><span class="tag tm">Beautiful Drive</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">1:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🏆 CHITKUL — India's Last Village</div><div class="sd">India–Tibet border ની India side નું last inhabited village (3450m). Baspa river, wooden temple, green meadows with snow peaks. 3+ hours spend karo. Locals very friendly. Unique vibes.</div><span class="tag tm">Must Visit</span><span class="tag ts">Night Stay</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">Evening</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div></div>
+          <div class="si"><div class="sn">💎 Chitkul Sunset + Stars</div><div class="sd">Riverside walk. Village explore. Raat ના milky way stargazing — zero light pollution. ખૂબ beautiful.</div><span class="tag tg">Gem</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Chitkul / Batseri homestays — with meals ₹600–1000/person. ADVANCE BOOKING MUST in August!</span></div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div id="page-day2" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 3 — Chitkul → Kalpa</div>
+          <div class="ch-sub">Aug 7 (Thursday)</div>
+          <span class="ch-km">~55 km &nbsp;·&nbsp; 2.5 hrs (slow, scenic)</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">5:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">⭐ Chitkul SUNRISE — Trip Highlight</div><div class="sd">ALARM LAGAAVJO! Chitkul sunrise ઉપર Kinner Kailash range golden થઈ જાય. Trip ની best photo moment. 45 min.</div><span class="tag tm">MUST SEE</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">8:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Breakfast + Depart</div><div class="sd">Homestay breakfast (usually dal, roti, chai — simple). Then drive to Reckong Peo.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">10:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#ff7b72"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">⚠️ Reckong Peo — IMPORTANT STOPS</div><div class="sd">1) ATM — CASH WITHDRAW KARO (last reliable ATM before Spiti, Kaza ATM unreliable). 2) Inner Line Permit collect (if required). 3) Petrol top-up.</div><span class="tag tw">Critical Stop</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">12:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🏆 KALPA — Kinner Kailash Views</div><div class="sd">6050m Kinner Kailash directly in front — breathtaking. Apple orchards all around. Afternoon fully here enjoy karo.</div><span class="tag tm">Must Visit</span><span class="tag ts">Night Stay</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">3:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div></div>
+          <div class="si"><div class="sn">Kalpa Village Walk</div><div class="sd">Suicide Point viewpoint, Hu-Bu-Lan-Kar monastery, apple orchards stroll. Evening chai with direct mountain views.</div><span class="tag tg">Village Explore</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Banjara Camps Kalpa / Zostel Kalpa / Kinner Kailash view rooms. ₹1000–2000/room. Book early!</span></div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div id="page-day3" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 4 — Kalpa → Nako → Gue → Tabo</div>
+          <div class="ch-sub">Aug 8 (Friday) &nbsp;·&nbsp; Spiti Valley Entry Day! 🎉</div>
+          <span class="ch-km">~170 km &nbsp;·&nbsp; 6-7 hrs with stops</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">6:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">⭐ Kalpa Sunrise</div><div class="sd">Kinner Kailash sunrise — another stunning one. 30 min, then breakfast and depart.</div><span class="tag tm">Sunrise</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">10:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🏔️ NAKO LAKE</div><div class="sd">Small but stunning lake at 3662m. Willows reflected in still water. Buddhist monastery. 45 min perfect stop.</div><span class="tag tm">Must Stop</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">12:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 GUE VILLAGE — 500yr Old Mummy</div><div class="sd">500+ year old naturally mummified monk — completely preserved with hair and nails! Utterly unique. Nothing like this in India. 1 hr detour, 100% worth it.</div><span class="tag tg">Hidden Gem</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">3:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 Sumdo / Malling Nala Viewpoint</div><div class="sd">Spiti + Pin river sangam visible from road. Landscape = dramatic desert mountains. Photo stop 15 min.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">5:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div></div>
+          <div class="si"><div class="sn">🏆 TABO MONASTERY — Ajanta of Himalayas</div><div class="sd">Founded 996 AD. 1000+ year old murals. One of oldest functioning monasteries in India. Evening prayer attend karo — monks chanting = magical atmosphere.</div><span class="tag tm">Must Visit</span><span class="tag ts">Night Stay</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Tabo Monastery Guesthouse (authentic, cheap ₹400-600) OR Pink House Tabo ₹1000–1500</span></div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div id="page-day4" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 5 — Tabo → Dhankar → Pin Valley → Kaza</div>
+          <div class="ch-sub">Aug 9 (Saturday) &nbsp;·&nbsp; Spiti Core Day</div>
+          <span class="ch-km">~100 km &nbsp;·&nbsp; Full exploration day</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">7:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🏔️ DHANKAR MONASTERY</div><div class="sd">Cliff ઉપર hanging monastery at 3894m. Below = Spiti + Pin river sangam. Above = snow peaks. Most dramatic monastery location in India.</div><span class="tag tm">Must Visit</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">9:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 Dhankar Lake Trek</div><div class="sd">Easy 2 km trek above monastery. Hidden lake with stunning reflections. 1.5 hrs total. ખૂબ beautiful — most people skip this. Don't.</div><span class="tag tg">Hidden Gem</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">12:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 PIN VALLEY — Mudh Village</div><div class="sd">Green fertile valley — totally opposite to desert Spiti. Mudh = authentic village end point. Lunch here (local dal-rice). Less tourists, more authentic.</div><span class="tag tg">Hidden Gem</span><span class="tag tf">Lunch</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">4:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
+          <div class="si"><div class="sn">KAZA — Spiti's Capital (Base Camp)</div><div class="sd">Kaza market explore, local thukpa + momos dinner. PETROL FILL KARO HERE — only reliable pump. Next 3 nights base camp.</div><span class="tag ts">Base Camp</span><span class="tag tf">Food</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Kaza — Zostel Spiti / Sakya Abode / Dewachen. ₹600–1500. PETROL FILL — jerry can extra carry karo!</span></div>
+    </div>
+
+    <!-- DAY 6 -->
+    <div id="page-day5" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 6 — Key Monastery + Kibber + Chicham Bridge</div>
+          <div class="ch-sub">Aug 10 (Sunday) &nbsp;·&nbsp; Kaza nearby circuit</div>
+          <span class="ch-km">~60 km loop &nbsp;·&nbsp; Half day circuit</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">6:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🏆 KEY MONASTERY — Spiti's Icon</div><div class="sd">11th century. Stacked on rocky hill at 4166m. THE postcard image of Spiti Valley. Sunrise lighting = best. Monks morning prayer attend karo. 1.5 hrs.</div><span class="tag tm">Must Visit</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">9:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 Kibber Village</div><div class="sd">One of world's highest motorable villages (4205m). Traditional stone homes. Snow Leopard habitat. Great viewpoints.</div><span class="tag tg">Hidden Gem</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">10:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🌉 CHICHAM BRIDGE</div><div class="sd">Asia's highest gorge bridge. 150m+ deep gorge below. Incredible engineering. Standing on it = adrenaline rush. Drone shots are insane here.</div><span class="tag tm">Must Visit</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">12:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 Gette Village (Optional detour)</div><div class="sd">Hardly any tourists. Stunning valley views. 30 min explore if energy hai toh.</div><span class="tag tg">Optional Gem</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">3:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
+          <div class="si"><div class="sn">Back to Kaza — Rest + Explore</div><div class="sd">Afternoon rest (altitude = tiring). Kaza market, souvenir shopping. Local café thukpa + apple juice. Early sleep — tomorrow big day.</div><span class="tag ts">Rest Day</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Same Kaza hotel. Rest well — tomorrow = Highest Villages Circuit (full day).</span></div>
+    </div>
+
+    <!-- DAY 7 -->
+    <div id="page-day6" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 7 — Hikkim + Komic + Langza + Demul</div>
+          <div class="ch-sub">Aug 11 (Monday) &nbsp;·&nbsp; Highest Villages Circuit</div>
+          <span class="ch-km">~70 km loop &nbsp;·&nbsp; Full day, start early!</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">7:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">📮 HIKKIM — World's Highest Post Office</div><div class="sd">4440m altitude. Post a letter / postcard to family back home — postmark = world's highest post office. Unique memory. 20 min.</div><span class="tag tg">Unique Gem</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">8:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 Komic Village — World's Highest Motorable</div><div class="sd">4587m — world's highest village with motorable road. Komic monastery. Rare birds. Unique experience.</div><span class="tag tg">World's Highest</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">10:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🏔️ LANGZA — Buddha + Fossils</div><div class="sd">Giant Buddha statue with Chandrabhaga peaks directly behind = legendary photo. Fossil hunting in fields (marine fossils at 4400m — ancient sea!). Magical evening light here.</div><span class="tag tm">Must Visit</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">1:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f778ba"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Langza / Komic — Lunch</div><div class="sd">Basic local food available. Carry packed lunch from Kaza to be safe.</div><span class="tag tf">Lunch</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">3:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">💎 DEMUL VILLAGE</div><div class="sd">Very authentic Spitian village. Barely any tourists. Great homestay experience if you have time. Stunning valley views. 45 min visit.</div><span class="tag tg">Hidden Gem</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">6:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
+          <div class="si"><div class="sn">Back to Kaza</div><div class="sd">Dinner + pack bags. Tomorrow morning = depart for Chandratal. Pack warm clothes tonight!</div><span class="tag ts">Last Kaza Night</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Same Kaza hotel. Pack for Chandratal tonight — heavy jacket, thermals, sleeping bag if possible.</span></div>
+    </div>
+
+    <!-- DAY 8 -->
+    <div id="page-day7" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 8 — Kaza → Kunzum Pass → Chandratal Lake</div>
+          <div class="ch-sub">Aug 12 (Tuesday) &nbsp;·&nbsp; GRAND FINALE 🌊</div>
+          <span class="ch-km">~95 km &nbsp;·&nbsp; 4-5 hrs (rough roads, go slow)</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">8:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Kaza → Losar</div><div class="sd">Last village before Kunzum Pass. Fill any remaining fuel. Basic maggi/chai available. Road gets rougher ahead.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">11:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">⛰️ KUNZUM PASS (4590m)</div><div class="sd">Gateway between Spiti and Lahaul. Kunzum Mata temple — locals always pray here for safe crossing. Panoramic 360° peak views. Snow possible even in August. 30 min stop.</div><span class="tag tm">Must Stop</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">1:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🌊 CHANDRATAL LAKE — Trip Pinnacle</div><div class="sd">4250m. Crescent-shaped glacial lake. Deep blue-turquoise water = surreal colour. Surrounded by snow peaks. 1 km walk from parking. THE most beautiful spot of the entire trip. Spend 2+ hrs here in daylight.</div><span class="tag tm">Grand Finale ⭐</span><span class="tag ts">Camp Night</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">Night</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
+          <div class="si"><div class="sn">🌌 Overnight at Chandratal Camp</div><div class="sd">Temperature = 5-8°C. Milky Way clearly visible — best stargazing of your life. Camp bonfire. 5 boys best memory of the trip. Thermals + heavy jacket + extra socks must!</div><span class="tag ts">Camp</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏕️ Camp:</strong> <span>Bedazzled Camps / Grasshopper / local camps near Chandratal. ₹1500–2500/person with dinner+breakfast. BOOK NOW — fills up fast!</span></div>
+    </div>
+
+    <!-- DAY 9 -->
+    <div id="page-day8" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 9 — Chandratal → Manali</div>
+          <div class="ch-sub">Aug 13 (Wednesday) &nbsp;·&nbsp; Return Journey Begins</div>
+          <span class="ch-km">~115 km &nbsp;·&nbsp; 5-6 hrs (very rough road initially)</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">5:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#f0883e"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">🌅 Chandratal Sunrise — Last Magic</div><div class="sd">WAKE UP FOR THIS. Lake turns gold and pink at sunrise. Best photography of the entire trip. 45 min at the lake.</div><span class="tag tm">MUST SEE</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">8:30 AM</div>
+          <div class="sdot"><div class="dot" style="background:#ff7b72"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">⚠️ Chandratal → Batal (Rough Road)</div><div class="sd">First 20 km = very rough boulder road. Drive very slowly. No rush. Batal = basic dhaba, chai, maggi. Eat here.</div><span class="tag tw">Rough Road Alert</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">11:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Gramphu Junction → Rohtang Pass</div><div class="sd">Rohtang Pass (3978m) — check if road is open (August usually open). Snow views, dramatic scenery. Photo stop 20 min.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">2:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f778ba"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Manali — Lunch + Rest</div><div class="sd">Proper meal at good restaurant. Car check-up. Petrol full. Manali Mall Road brief walk. Buy last souvenirs.</div><span class="tag tf">Food + Rest</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">Evening</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
+          <div class="si"><div class="sn">🏨 Manali — Night Stay</div><div class="sd">Old Manali or Mall Road area. Rest properly — long drive to Chandigarh tomorrow.</div><span class="tag ts">Night Stay</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>🏨 Stay:</strong> <span>Manali Old Manali or Mall Road — Zostel Manali / Johnson's Lodge / Budget options ₹800–1500</span></div>
+    </div>
+
+    <!-- DAY 10 -->
+    <div id="page-day9" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">Day 10 — Manali → Chandigarh → Ahmedabad</div>
+          <div class="ch-sub">Aug 14 (Thursday) &nbsp;·&nbsp; Final Day — Drive Home 🏠</div>
+          <span class="ch-km">Manali→Chandigarh ~310 km + Chandigarh→Ahmedabad ~745 km</span>
+        </div>
+      </div>
+      <div class="stops-container">
+        <div class="stop">
+          <div class="stime">5:00 AM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Manali — Early Departure</div><div class="sd">Last mountain morning enjoy — then depart. Petrol full. Driver rotation plan ready.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">1:00 PM</div>
+          <div class="sdot"><div class="dot" style="background:#f778ba"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Chandigarh — Lunch + Break</div><div class="sd">Sector 17 area meal. Car wash if needed. Driver rotation fresh karo. Last highway stretch ahead.</div><span class="tag tf">Lunch Break</span></div>
+        </div>
+        <div class="stop">
+          <div class="stime">2:30 PM</div>
+          <div class="sdot"><div class="dot" style="background:#79c0ff"></div><div class="dl"></div></div>
+          <div class="si"><div class="sn">Chandigarh → Ahmedabad (NH48)</div><div class="sd">~745 km. Drive in shifts — 2-2.5 hr each. Stops every 2 hrs. Target reach midnight / early morning Aug 15.</div></div>
+        </div>
+        <div class="stop">
+          <div class="stime">Aug 15 ~2AM</div>
+          <div class="sdot"><div class="dot" style="background:#56d364"></div></div>
+          <div class="si"><div class="sn">
+🏠 Ahmedabad — TRIP COMPLETE!</div><div class="sd">10 days, ~3000 km, 18+ places, 5 boys — life changing trip. Jai Spiti! 🏔️</div><span class="tag tg">Home Sweet Home</span></div>
+        </div>
+      </div>
+      <div class="stay-box"><strong>💡 Tip:</strong> <span>Aug 14 evening Chandigarh reach → stay 1 night → Aug 15 morning start → reach Ahmedabad comfortably by night. Drive in daytime better.</span></div>
+    </div>
+
+    <!-- TIPS PAGE -->
+    <div id="page-tips" class="day-card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="ch-title">⚡ Critical Checklist — 5 Boys Car Trip</div>
+          <div class="ch-sub">Must-know before you go</div>
+        </div>
+      </div>
+      <div class="tips-card" style="border:none;border-radius:0;">
+        <div class="tip"><span class="tip-icon">⛽</span><span><strong>Petrol:</strong> Reckong Peo + Kaza = fill full. Chandratal jaata pehla extra 10L jerry can carry karo. Next pump = Manali.</span></div>
+        <div class="tip"><span class="tip-icon">💵</span><span><strong>Cash:</strong> ₹10,000+ per person cash. Reckong Peo ATM = last reliable. Spiti = NO UPI, NO card, cash only.</span></div>
+        <div class="tip"><span class="tip-icon">💊</span><span><strong>Medicines:</strong> Diamox (altitude sickness), Dolo 650, ORS, Disprin, Band-aids, Digene. Start Diamox 1 day before entering altitude.</span></div>
+        <div class="tip"><span class="tip-icon">📱</span><span><strong>Network:</strong> BSNL SIM ek janpas must. Airtel/Jio = no signal in Spiti. Maps.me offline download karo before trip.</span></div>
+        <div class="tip"><span class="tip-icon">🧥</span><span><strong>Clothes:</strong> August = 18-20°C day, 5-10°C night. Thermal, fleece, heavy jacket, raincoat — all carry karo.</span></div>
+        <div class="tip"><span class="tip-icon">🚗</span><span><strong>Car:</strong> Spare tyre must. Basic toolkit + tow rope. 4x4 preferred. Chandratal road = rocky, go slow.</span></div>
+        <div class="tip"><span class="tip-icon">📅</span><span><strong>Booking NOW:</strong> Chitkul (Aug full), Chandratal camps (books 1 month early), Kalpa (limited rooms), Kaza hotels.</span></div>
+        <div class="tip"><span class="tip-icon">💧</span><span><strong>Water:</strong> 2L per person daily minimum. Altitude = dehydration fast. Avoid alcohol first 2 days at high altitude.</span></div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<script>
+  function showDay(n, el) {
+    // hide all pages
+    document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+    // show target day
+    document.getElementById('page-day' + n).style.display = 'block';
+    // update nav active
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    // update topbar
+    const titles = [
+      'Day 1 — Ahmedabad → Chandigarh → Narkanda',
+      'Day 2 — Narkanda → Sangla → Chitkul',
+      'Day 3 — Chitkul → Kalpa',
+      'Day 4 — Kalpa → Nako → Gue → Tabo',
+      'Day 5 — Tabo → Dhankar → Pin Valley → Kaza',
+      'Day 6 — Key Monastery + Kibber + Chicham Bridge',
+      'Day 7 — Hikkim + Komic + Langza + Demul',
+      'Day 8 — Kaza → Kunzum Pass → Chandratal Lake',
+      'Day 9 — Chandratal → Manali',
+      'Day 10 — Manali → Chandigarh → Ahmedabad'
+    ];
+    const subs = [
+      'Aug 5 (Tuesday) · 4:00 AM Departure · ~730 km',
+      'Aug 6 (Wednesday) · ~180 km mountain roads',
+      'Aug 7 (Thursday) · ~55 km scenic drive',
+      'Aug 8 (Friday) · Spiti Valley Entry Day! · ~170 km',
+      'Aug 9 (Saturday) · Spiti Core Day · ~100 km',
+      'Aug 10 (Sunday) · Kaza nearby circuit · ~60 km loop',
+      'Aug 11 (Monday) · Highest Villages Circuit · ~70 km loop',
+      'Aug 12 (Tuesday) · GRAND FINALE · ~95 km rough roads',
+      'Aug 13 (Wednesday) · Return Journey Begins · ~115 km',
+      'Aug 14 (Thursday) · Final Day — Drive Home 🏠'
+    ];
+    document.getElementById('topbar-title').textContent = titles[n];
+    document.getElementById('topbar-sub').textContent = subs[n];
+    document.querySelector('.content').scrollTop = 0;
+  }
+
+  function showPage(name, el) {
+    document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+    document.getElementById('page-' + name).style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    if (name === 'overview') {
+      document.getElementById('topbar-title').textContent = 'Dashboard — Spiti Valley Trip Overview';
+      document.getElementById('topbar-sub').textContent = 'Aug 5–14, 2025 · Ahmedabad → Shimla Route → Spiti → Manali → Ahmedabad';
+    } else if (name === 'tips') {
+      document.getElementById('topbar-title').textContent = '⚡ Critical Checklist — 5 Boys Car Trip';
+      document.getElementById('topbar-sub').textContent = 'Must-know before you go';
+    }
+    document.querySelector('.content').scrollTop = 0;
+  }
+
+  // init: show overview
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+  document.getElementById('page-overview').style.display = 'block';
+</script>
+</body>
+</html>
