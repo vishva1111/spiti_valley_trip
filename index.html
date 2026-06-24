@@ -6,13 +6,17 @@
   <title>🏔️ Spiti Valley Trip Planner</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; display: flex; height: 100vh; overflow: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
 
-    /* SIDEBAR */
+    /* ── LAYOUT ── */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
     .sidebar {
       width: 245px; min-width: 245px; background: #1e3a5f;
       display: flex; flex-direction: column; height: 100vh; overflow-y: auto;
-      box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+      box-shadow: 2px 0 12px rgba(0,0,0,0.15); transition: transform 0.3s ease;
+      flex-shrink: 0;
     }
     .sidebar-header {
       padding: 20px 16px 16px;
@@ -45,24 +49,44 @@
     .ss-key { font-size: 11px; color: rgba(255,255,255,0.45); }
     .ss-val { font-size: 11px; color: #fff; font-weight: 600; }
 
-    /* MAIN CONTENT */
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    /* ── MOBILE HEADER ── */
+    .mobile-header {
+      display: none; background: #1e3a5f; padding: 12px 16px;
+      align-items: center; gap: 12px; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .hamburger {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .hamburger span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+    .mobile-title { color: #fff; font-size: 14px; font-weight: 700; flex: 1; }
+    .mobile-logo { font-size: 20px; }
+
+    /* ── OVERLAY ── */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+    .overlay.show { display: block; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
     .topbar {
       background: #fff; border-bottom: 1px solid #e2e8f0;
       padding: 13px 24px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06); flex-wrap: wrap;
     }
-    .topbar-title { font-size: 15px; font-weight: 700; flex: 1; color: #1a202c; }
-    .topbar-sub { font-size: 11px; color: #718096; }
-    .badge-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .topbar-info { flex: 1; min-width: 0; }
+    .topbar-title { font-size: 15px; font-weight: 700; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .topbar-sub { font-size: 11px; color: #718096; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .topbar-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .badge-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; white-space: nowrap; }
     .bp-blue { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
     .bp-green { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
     .bp-orange { background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; }
 
     .content { flex: 1; overflow-y: auto; padding: 20px 24px; background: #f0f4f8; }
 
-    /* CARDS */
+    /* ── CARDS ── */
     .day-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 16px; display: none; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
     .day-card.active { display: block; }
 
@@ -72,13 +96,13 @@
     .ch-sub { font-size: 11px; color: #718096; }
     .ch-km { display: inline-flex; align-items: center; margin-top: 7px; background: #ebf8ff; color: #2b6cb0; font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid #bee3f8; }
 
-    /* STATS ROW */
+    /* ── STATS ROW ── */
     .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
     .stat-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .stat-val { font-size: 22px; font-weight: 700; color: #1e3a5f; margin-bottom: 3px; }
     .stat-lbl { font-size: 10px; color: #718096; font-weight: 500; }
 
-    /* ROUTE BAR */
+    /* ── ROUTE BAR ── */
     .route-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
     .route-title { font-size: 10px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
     .route-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
@@ -86,12 +110,12 @@
     .rb.active-rb { background: #1e3a5f; color: #fff; border-color: #1e3a5f; font-weight: 600; }
     .rarr { color: #cbd5e0; font-size: 12px; }
 
-    /* LEGEND */
+    /* ── LEGEND ── */
     .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
     .li { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #718096; }
-    .ld { width: 8px; height: 8px; border-radius: 50%; }
+    .ld { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* STOPS */
+    /* ── STOPS ── */
     .stops-container { padding: 4px 0; }
     .stop { display: flex; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #f7fafc; transition: background 0.1s; }
     .stop:last-child { border-bottom: none; }
@@ -100,7 +124,7 @@
     .sdot { display: flex; flex-direction: column; align-items: center; }
     .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.12); }
     .dl { width: 2px; background: #e2e8f0; flex: 1; margin: 3px 0; min-height: 18px; }
-    .si { flex: 1; }
+    .si { flex: 1; min-width: 0; }
     .sn { font-size: 13px; font-weight: 600; color: #1a202c; margin-bottom: 3px; }
     .sd { font-size: 11.5px; color: #718096; line-height: 1.65; }
     .tag { display: inline-block; font-size: 9.5px; padding: 2px 9px; border-radius: 20px; margin-top: 5px; margin-right: 4px; font-weight: 600; }
@@ -110,12 +134,12 @@
     .tf { background: #fff5f7; color: #97266d; border: 1px solid #fed7e2; }
     .tw { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
 
-    /* STAY BOX */
+    /* ── STAY BOX ── */
     .stay-box { margin: 0 20px 16px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 11px 15px; font-size: 11.5px; display: flex; gap: 8px; align-items: flex-start; }
     .stay-box strong { color: #1a202c; font-weight: 600; white-space: nowrap; }
     .stay-box span { color: #718096; line-height: 1.55; }
 
-    /* TIPS */
+    /* ── TIPS ── */
     .tips-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
     .tips-header { padding: 13px 20px; border-bottom: 1px solid #e2e8f0; background: #f7fafc; font-size: 13px; font-weight: 700; color: #1a202c; }
     .tip { display: flex; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #f7fafc; font-size: 11.5px; color: #718096; line-height: 1.65; }
@@ -124,13 +148,13 @@
     .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
     .tip strong { color: #1a202c; }
 
-    /* SCROLLBAR */
+    /* ── SCROLLBAR ── */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #f0f4f8; }
     ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
 
-    /* DASHBOARD OVERVIEW */
+    /* ── OVERVIEW GRID ── */
     .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
     .ov-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .ov-title { font-size: 10.5px; color: #718096; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 11px; }
@@ -138,13 +162,78 @@
     .ov-item:last-child { border-bottom: none; }
     .ov-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .ov-name { flex: 1; color: #2d3748; }
-    .ov-meta { color: #a0aec0; font-size: 10.5px; font-weight: 600; }
+    .ov-meta { color: #a0aec0; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+
+    /* ── RESPONSIVE: TABLET ── */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .overview-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 10px 16px; }
+      .content { padding: 16px; }
+    }
+
+    /* ── RESPONSIVE: MOBILE ── */
+    @media (max-width: 640px) {
+      .app { flex-direction: column; }
+
+      .sidebar {
+        position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+        transform: translateX(-100%);
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      .mobile-header { display: flex; }
+
+      .topbar { display: none; }
+
+      .main { height: calc(100vh - 52px); }
+
+      .content { padding: 12px; }
+
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+      .stat-box { padding: 10px 12px; }
+      .stat-val { font-size: 18px; }
+
+      .overview-grid { grid-template-columns: 1fr; gap: 10px; }
+
+      .card-header { padding: 12px 14px; }
+      .ch-title { font-size: 13px; }
+
+      .stop { padding: 10px 14px; gap: 10px; }
+      .stime { min-width: 44px; font-size: 9.5px; }
+      .sn { font-size: 12px; }
+      .sd { font-size: 11px; }
+
+      .stay-box { margin: 0 14px 14px; padding: 10px 12px; font-size: 11px; }
+
+      .tip { padding: 10px 14px; font-size: 11px; }
+
+      .route-section { padding: 12px 14px; }
+      .rb { font-size: 10px; padding: 3px 8px; }
+
+      .legend { gap: 10px; }
+      .li { font-size: 10.5px; }
+
+      .ov-card { padding: 12px 14px; }
+      .ov-item { font-size: 11px; }
+    }
+
+    @media (max-width: 380px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .stat-val { font-size: 16px; }
+      .ch-title { font-size: 12px; }
+    }
   </style>
 </head>
 <body>
 
+<!-- OVERLAY for mobile sidebar -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="app">
+
 <!-- SIDEBAR -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">🏔️</div>
     <div class="sidebar-title">Spiti Valley 2025</div>
@@ -229,14 +318,27 @@
 
 <!-- MAIN -->
 <div class="main">
+
+  <!-- MOBILE HEADER -->
+  <div class="mobile-header">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="mobile-logo">🏔️</span>
+    <span class="mobile-title" id="mobile-title">Dashboard</span>
+  </div>
+
+  <!-- DESKTOP TOPBAR -->
   <div class="topbar">
-    <div>
+    <div class="topbar-info">
       <div class="topbar-title" id="topbar-title">Dashboard — Spiti Valley Trip Overview</div>
       <div class="topbar-sub" id="topbar-sub">Aug 5–14, 2025 &nbsp;·&nbsp; Ahmedabad → Shimla Route → Spiti → Manali → Ahmedabad</div>
     </div>
-    <span class="badge-pill bp-blue">10 Days</span>
-    <span class="badge-pill bp-green">~3000 KM</span>
-    <span class="badge-pill bp-orange">18+ Places</span>
+    <div class="topbar-badges">
+      <span class="badge-pill bp-blue">10 Days</span>
+      <span class="badge-pill bp-green">~3000 KM</span>
+      <span class="badge-pill bp-orange">18+ Places</span>
+    </div>
   </div>
 
   <div class="content">
@@ -293,7 +395,7 @@
         </div>
         <div class="ov-card">
           <div class="ov-title">⚠️ Critical Reminders</div>
-          <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Cash ₹10K+ — Reckong Peo ATM last</span><span class="ov-meta">Day 3</span></div>
+<div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Cash ₹10K+ — Reckong Peo ATM last</span><span class="ov-meta">Day 3</span></div>
           <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Petrol full at Kaza — jerry can carry</span><span class="ov-meta">Day 5</span></div>
           <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">BSNL SIM must — no Jio/Airtel in Spiti</span><span class="ov-meta">Before</span></div>
           <div class="ov-item"><div class="ov-dot" style="background:#ff7b72"></div><span class="ov-name">Diamox — start 1 day before altitude</span><span class="ov-meta">Day 3</span></div>
@@ -344,8 +446,7 @@
           <div class="stime">7:30 PM</div>
           <div class="sdot"><div class="dot" style="background:#79c0ff"></div></div>
           <div class="si"><div class="sn">🏨 Narkanda — Night Stay</div><div class="sd">Apple orchard region at 2708m. Fresh air, scenic. Early sleep — tomorrow big mountain drive starts.</div><span class="tag ts">Night Stay</span></div>
-        
-</div>
+        </div>
       </div>
       <div class="stay-box"><strong>🏨 Stay:</strong> <span>Hotel Hatu (HPTDC) or Ashiana Hotel Narkanda. ₹800–1200/room</span></div>
     </div>
@@ -610,7 +711,8 @@
           <div class="si"><div class="sn">🌌 Overnight at Chandratal Camp</div><div class="sd">Temperature = 5-8°C. Milky Way clearly visible — best stargazing of your life. Camp bonfire. 5 boys best memory of the trip. Thermals + heavy jacket + extra socks must!</div><span class="tag ts">Camp</span></div>
         </div>
       </div>
-      <div class="stay-box"><strong>🏕️ Camp:</strong> <span>Bedazzled Camps / Grasshopper / local camps near Chandratal. ₹1500–2500/person with dinner+breakfast. BOOK NOW — fills up fast!</span></div>
+      <div class="stay-box"><strong>🏕️ Camp:</strong> <span>Bedazzled Camps / Grasshopper / local camps near Chandratal. ₹1500–2500/person with dinner+breakfast. BOOK NOW — fills up fast!</span
+></div>
     </div>
 
     <!-- DAY 9 -->
@@ -680,8 +782,7 @@
         <div class="stop">
           <div class="stime">Aug 15 ~2AM</div>
           <div class="sdot"><div class="dot" style="background:#56d364"></div></div>
-          <div class="si"><div class="sn">
-🏠 Ahmedabad — TRIP COMPLETE!</div><div class="sd">10 days, ~3000 km, 18+ places, 5 boys — life changing trip. Jai Spiti! 🏔️</div><span class="tag tg">Home Sweet Home</span></div>
+          <div class="si"><div class="sn">🏠 Ahmedabad — TRIP COMPLETE!</div><div class="sd">10 days, ~3000 km, 18+ places, 5 boys — life changing trip. Jai Spiti! 🏔️</div><span class="tag tg">Home Sweet Home</span></div>
         </div>
       </div>
       <div class="stay-box"><strong>💡 Tip:</strong> <span>Aug 14 evening Chandigarh reach → stay 1 night → Aug 15 morning start → reach Ahmedabad comfortably by night. Drive in daytime better.</span></div>
@@ -709,17 +810,23 @@
 
   </div><!-- end .content -->
 </div><!-- end .main -->
+</div><!-- end .app -->
 
 <script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+  }
+
   function showDay(n, el) {
-    // hide all pages
     document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
-    // show target day
     document.getElementById('page-day' + n).style.display = 'block';
-    // update nav active
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
-    // update topbar
     const titles = [
       'Day 1 — Ahmedabad → Chandigarh → Narkanda',
       'Day 2 — Narkanda → Sangla → Chitkul',
@@ -746,7 +853,9 @@
     ];
     document.getElementById('topbar-title').textContent = titles[n];
     document.getElementById('topbar-sub').textContent = subs[n];
+    document.getElementById('mobile-title').textContent = 'Day ' + (n+1);
     document.querySelector('.content').scrollTop = 0;
+    closeSidebar();
   }
 
   function showPage(name, el) {
@@ -757,14 +866,17 @@
     if (name === 'overview') {
       document.getElementById('topbar-title').textContent = 'Dashboard — Spiti Valley Trip Overview';
       document.getElementById('topbar-sub').textContent = 'Aug 5–14, 2025 · Ahmedabad → Shimla Route → Spiti → Manali → Ahmedabad';
+      document.getElementById('mobile-title').textContent = 'Dashboard';
     } else if (name === 'tips') {
       document.getElementById('topbar-title').textContent = '⚡ Critical Checklist — 5 Boys Car Trip';
       document.getElementById('topbar-sub').textContent = 'Must-know before you go';
+      document.getElementById('mobile-title').textContent = 'Checklist';
     }
     document.querySelector('.content').scrollTop = 0;
+    closeSidebar();
   }
 
-  // init: show overview
+  // init
   document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
   document.getElementById('page-overview').style.display = 'block';
 </script>
